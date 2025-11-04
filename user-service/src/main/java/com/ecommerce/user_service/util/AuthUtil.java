@@ -3,25 +3,29 @@ package com.ecommerce.user_service.util;
 import com.ecommerce.user_service.model.User;
 import com.ecommerce.user_service.repositories.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
+import com.ecommerce.user_service.security.jwt.JwtUtils;
+import io.jsonwebtoken.Claims;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Component
 public class AuthUtil {
-    private static final String USER_HEADER = "X-Auth-User";
-    private static final String EMAIL_HEADER = "X-Auth-Email";
-    private static final String USER_ID_HEADER = "X-Auth-UserId";
+    private static final String JWT_CLAIMS_ATTRIBUTE = "USER_SERVICE_JWT_CLAIMS";
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final JwtUtils jwtUtils;
+
+    public AuthUtil(UserRepository userRepository, JwtUtils jwtUtils) {
+        this.userRepository = userRepository;
+        this.jwtUtils = jwtUtils;
+    }
 
     public String loggedInEmail() {
-        HttpServletRequest request = currentRequest();
-        String email = request.getHeader(EMAIL_HEADER);
+        Claims claims = currentClaims();
+        String email = claims.get("email", String.class);
         if (email != null && !email.isBlank()) {
             return email;
         }
@@ -29,26 +33,41 @@ public class AuthUtil {
     }
 
     public Long loggedInUserId() {
-        HttpServletRequest request = currentRequest();
-        String userId = request.getHeader(USER_ID_HEADER);
-        if (userId != null && !userId.isBlank()) {
-            try {
-                return Long.parseLong(userId);
-            } catch (NumberFormatException ignored) {
-                // fallback to lookup
-            }
+        Claims claims = currentClaims();
+        Number userId = claims.get("userId", Number.class);
+        if (userId != null) {
+            return userId.longValue();
         }
         return loggedInUser().getUserId();
     }
 
     public User loggedInUser() {
-        HttpServletRequest request = currentRequest();
-        String username = request.getHeader(USER_HEADER);
+        String username = currentClaims().getSubject();
         if (username == null || username.isBlank()) {
             throw new UsernameNotFoundException("Missing authenticated user information");
         }
         return userRepository.findByUserName(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+    }
+
+    private Claims currentClaims() {
+        HttpServletRequest request = currentRequest();
+        Object cachedClaims = request.getAttribute(JWT_CLAIMS_ATTRIBUTE);
+        if (cachedClaims instanceof Claims claims) {
+            return claims;
+        }
+
+        String token = jwtUtils.getJwtFromCookies(request);
+        if (token == null || token.isBlank()) {
+            throw new UsernameNotFoundException("Missing authentication token");
+        }
+        if (!jwtUtils.validateJwtToken(token)) {
+            throw new UsernameNotFoundException("Invalid or expired authentication token");
+        }
+
+        Claims claims = jwtUtils.getClaimsFromJwtToken(token);
+        request.setAttribute(JWT_CLAIMS_ATTRIBUTE, claims);
+        return claims;
     }
 
     private HttpServletRequest currentRequest() {

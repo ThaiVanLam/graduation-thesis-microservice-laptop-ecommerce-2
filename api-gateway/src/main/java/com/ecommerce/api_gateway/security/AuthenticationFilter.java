@@ -23,10 +23,7 @@ import java.util.stream.Collectors;
 @Component
 public class AuthenticationFilter implements GlobalFilter, Ordered {
 
-    private static final String HEADER_USER = "X-Auth-User";
-    private static final String HEADER_EMAIL = "X-Auth-Email";
-    private static final String HEADER_ROLES = "X-Auth-Roles";
-    private static final String HEADER_USER_ID = "X-Auth-UserId";
+
 
     private final JwtService jwtService;
     private final GatewaySecurityProperties securityProperties;
@@ -51,7 +48,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 
         String token = resolveToken(request);
         if (token == null || token.isBlank()) {
-            return unauthorized(exchange, "Missing Authorization header");
+            return unauthorized(exchange, "Missing authentication token");
         }
 
         if (!jwtService.isTokenValid(token)) {
@@ -66,29 +63,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
             return forbidden(exchange, "Insufficient permissions");
         }
 
-        String username = jwtService.extractUsername(claims);
-        ServerHttpRequest mutatedRequest = request.mutate()
-                .headers(headers -> {
-                    headers.remove(HEADER_USER);
-                    headers.remove(HEADER_EMAIL);
-                    headers.remove(HEADER_ROLES);
-                    headers.remove(HEADER_USER_ID);
-                    headers.add(HEADER_USER, username == null ? "" : username);
-                    String email = jwtService.extractEmail(claims);
-                    if (email != null) {
-                        headers.add(HEADER_EMAIL, email);
-                    }
-                    String userId = jwtService.extractUserId(claims);
-                    if (userId != null) {
-                        headers.add(HEADER_USER_ID, userId);
-                    }
-                    if (!roles.isEmpty()) {
-                        headers.add(HEADER_ROLES, String.join(",", roles));
-                    }
-                })
-                .build();
-
-        return chain.filter(exchange.mutate().request(mutatedRequest).build());
+        return chain.filter(exchange);
     }
 
     @Override
@@ -112,11 +87,6 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
     }
 
     private String resolveToken(ServerHttpRequest request) {
-        String header = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-        if (header != null && header.startsWith("Bearer ")) {
-            return header.substring(7);
-        }
-
         HttpCookie jwtCookie = request.getCookies().getFirst(jwtCookieName);
         if (jwtCookie != null && jwtCookie.getValue() != null && !jwtCookie.getValue().isBlank()) {
             return jwtCookie.getValue();
