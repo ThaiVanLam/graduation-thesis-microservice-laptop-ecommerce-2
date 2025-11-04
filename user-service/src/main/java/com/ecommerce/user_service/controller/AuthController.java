@@ -4,6 +4,7 @@ package com.ecommerce.user_service.controller;
 import com.ecommerce.user_service.model.AppRole;
 import com.ecommerce.user_service.model.Role;
 import com.ecommerce.user_service.model.User;
+import jakarta.servlet.http.HttpServletRequest;
 import com.ecommerce.user_service.repositories.RoleRepository;
 import com.ecommerce.user_service.repositories.UserRepository;
 import com.ecommerce.user_service.security.jwt.JwtUtils;
@@ -97,12 +98,24 @@ public class AuthController {
     }
 
     @GetMapping("/username")
-    public String currentUserName(@RequestHeader(value = "X-Auth-User", required = false) String username) {
-        return username != null ? username : "";
+    public ResponseEntity<?> currentUserName(HttpServletRequest httpServletRequest) {
+        String jwt = jwtUtils.getJwtFromCookies(httpServletRequest);
+        if (jwt == null || !jwtUtils.validateJwtToken(jwt)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new MessageResponse("Invalid or missing authentication token"));
+        }
+        String username = jwtUtils.getUserNameFromJwtToken(jwt);
+        return ResponseEntity.ok(username);
     }
 
     @GetMapping("/user")
-    public ResponseEntity<?> getUserDetails(@RequestHeader("X-Auth-User") String username) {
+    public ResponseEntity<?> getUserDetails(HttpServletRequest httpServletRequest) {
+        String jwt = jwtUtils.getJwtFromCookies(httpServletRequest);
+        if (jwt == null || !jwtUtils.validateJwtToken(jwt)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new MessageResponse("Invalid or missing authentication token"));
+        }
+        String username = jwtUtils.getUserNameFromJwtToken(jwt);
         User user = userRepository.findByUserName(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         List<String> roles = user.getRoles().stream()

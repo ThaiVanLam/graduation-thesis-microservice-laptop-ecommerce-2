@@ -3,9 +3,11 @@ package com.ecommerce.user_service.security.jwt;
 import com.ecommerce.user_service.model.User;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
+import java.util.Collections;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -92,6 +94,31 @@ public class JwtUtils {
             logger.error("JWT claims string is empty: {}", e.getMessage());
         }
         return false;
+    }
+
+    public Claims getClaimsFromJwtToken(String authToken) {
+        return Jwts.parser().verifyWith((SecretKey) key()).build().parseSignedClaims(authToken).getPayload();
+    }
+
+    public String getUserNameFromJwtToken(String token) {
+        return getClaimsFromJwtToken(token).getSubject();
+    }
+
+    public Long getUserIdFromJwtToken(String token) {
+        Number userId = getClaimsFromJwtToken(token).get("userId", Number.class);
+        return userId != null ? userId.longValue() : null;
+    }
+
+    public String getEmailFromJwtToken(String token) {
+        return getClaimsFromJwtToken(token).get("email", String.class);
+    }
+
+    public List<String> getRolesFromJwtToken(String token) {
+        List<?> roles = getClaimsFromJwtToken(token).get("roles", List.class);
+        if (roles == null) {
+            return Collections.emptyList();
+        }
+        return roles.stream().map(Object::toString).collect(Collectors.toList());
     }
 
     private Key key() {
