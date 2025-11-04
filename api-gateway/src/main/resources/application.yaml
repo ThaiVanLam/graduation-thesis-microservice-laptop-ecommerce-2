@@ -6,6 +6,9 @@ spring:
   app:
     jwtSecret: mySecretKey123912738fsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfgfdhrher
     jwtExpirationMs: 3000000
+  ecom:
+    app:
+      jwtCookieName: springBootEcom
 
   cloud:
     gateway:

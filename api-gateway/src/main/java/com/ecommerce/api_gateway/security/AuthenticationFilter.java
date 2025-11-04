@@ -1,12 +1,14 @@
 package com.ecommerce.api_gateway.security;
 
 import io.jsonwebtoken.Claims;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
@@ -28,11 +30,15 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
 
     private final JwtService jwtService;
     private final GatewaySecurityProperties securityProperties;
+    private final String jwtCookieName;
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
-    public AuthenticationFilter(JwtService jwtService, GatewaySecurityProperties securityProperties) {
+    public AuthenticationFilter(JwtService jwtService,
+                                GatewaySecurityProperties securityProperties,
+                                @Value("${spring.ecom.app.jwtCookieName:springBootEcom}") String jwtCookieName) {
         this.jwtService = jwtService;
         this.securityProperties = securityProperties;
+        this.jwtCookieName = jwtCookieName;
     }
 
     @Override
@@ -110,6 +116,12 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
         if (header != null && header.startsWith("Bearer ")) {
             return header.substring(7);
         }
+
+        HttpCookie jwtCookie = request.getCookies().getFirst(jwtCookieName);
+        if (jwtCookie != null && jwtCookie.getValue() != null && !jwtCookie.getValue().isBlank()) {
+            return jwtCookie.getValue();
+        }
+
         return null;
     }
 
