@@ -49,7 +49,7 @@ public class JwtUtils {
 
     public ResponseCookie generateJwtCookie(String token) {
         return ResponseCookie.from(jwtCookie, token)
-                .path("/api")
+                .path("/user-manager/api")
                 .maxAge(24 * 60 * 60)
                 .httpOnly(false)
                 .build();
@@ -57,7 +57,7 @@ public class JwtUtils {
 
     public ResponseCookie getCleanJwtCookie() {
         return ResponseCookie.from(jwtCookie, null)
-                .path("/api")
+                .path("/user-manager/api")
                 .build();
     }
 
