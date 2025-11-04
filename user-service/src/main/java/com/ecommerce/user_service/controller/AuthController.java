@@ -1,0 +1,120 @@
+package com.ecommerce.user_service.controller;
+
+
+import com.ecommerce.user_service.model.AppRole;
+import com.ecommerce.user_service.model.Role;
+import com.ecommerce.user_service.model.User;
+import com.ecommerce.user_service.repositories.RoleRepository;
+import com.ecommerce.user_service.repositories.UserRepository;
+import com.ecommerce.user_service.security.jwt.JwtUtils;
+import com.ecommerce.user_service.security.request.LoginRequest;
+import com.ecommerce.user_service.security.request.SignupRequest;
+import com.ecommerce.user_service.security.response.MessageResponse;
+import com.ecommerce.user_service.security.response.UserInfoResponse;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+@RestController
+@RequestMapping("/api/auth")
+public class AuthController {
+    @Autowired
+    private JwtUtils jwtUtils;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private RoleRepository roleRepository;
+
+    @PostMapping("/signin")
+    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
+        Optional<User> optionalUser = userRepository.findByUserName(loginRequest.getUsername());
+        if (optionalUser.isEmpty() || !passwordEncoder.matches(loginRequest.getPassword(), optionalUser.get().getPassword())) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("message", "Bad credentials");
+            map.put("status", false);
+            return new ResponseEntity<>(map, HttpStatus.NOT_FOUND);
+        }
+
+        User user = optionalUser.get();
+        String token = jwtUtils.generateToken(user);
+        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(token);
+        List<String> roles = user.getRoles().stream().map(role -> role.getRoleName().name()).collect(Collectors.toList());
+        UserInfoResponse loginResponse = new UserInfoResponse(user.getUserId(), token, user.getUserName(), roles);
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString()).body(loginResponse);
+    }
+
+    @PostMapping("/signup")
+    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signupRequest) {
+        if (userRepository.existsByUserName(signupRequest.getUsername())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: Username is already taken!"));
+        }
+
+        if (userRepository.existsByEmail(signupRequest.getEmail())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: Email is already taken!"));
+        }
+
+        User user = new User(signupRequest.getUsername(), signupRequest.getEmail(), passwordEncoder.encode(signupRequest.getPassword()));
+
+        Set<String> strRoles = signupRequest.getRoles();
+        Set<Role> roles = new HashSet<>();
+
+        if (strRoles == null) {
+            Role userRole = roleRepository.findByRoleName(AppRole.ROLE_USER).orElseThrow(() -> new RuntimeException("Error: Role is not found!"));
+            roles.add(userRole);
+        } else {
+            strRoles.forEach(role -> {
+                switch (role) {
+                    case "admin":
+                        Role adminRole = roleRepository.findByRoleName(AppRole.ROLE_ADMIN).orElseThrow(() -> new RuntimeException("Error: Role is not found"));
+                        roles.add(adminRole);
+                        break;
+                    case "seller":
+                        Role sellerRole = roleRepository.findByRoleName(AppRole.ROLE_SELLER).orElseThrow(() -> new RuntimeException("Error: Role is not found"));
+                        roles.add(sellerRole);
+                        break;
+                    default:
+                        Role userRole = roleRepository.findByRoleName(AppRole.ROLE_USER).orElseThrow(() -> new RuntimeException("Error: Role is not found"));
+                        roles.add(userRole);
+                }
+            });
+        }
+        user.setRoles(roles);
+        userRepository.save(user);
+        return ResponseEntity.ok(new MessageResponse("User registered successfully"));
+    }
+
+    @GetMapping("/username")
+    public String currentUserName(@RequestHeader(value = "X-Auth-User", required = false) String username) {
+        return username != null ? username : "";
+    }
+
+    @GetMapping("/user")
+    public ResponseEntity<?> getUserDetails(@RequestHeader("X-Auth-User") String username) {
+        User user = userRepository.findByUserName(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        List<String> roles = user.getRoles().stream()
+                .map(role -> role.getRoleName().name())
+                .collect(Collectors.toList());
+        UserInfoResponse response = new UserInfoResponse(user.getUserId(), user.getUserName(), roles);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/signout")
+    public ResponseEntity<?> signoutUser() {
+        ResponseCookie cookie = jwtUtils.getCleanJwtCookie();
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(new MessageResponse("You've been signed out!"));
+    }
+}

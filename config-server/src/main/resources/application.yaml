@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: config-server
+  profiles:
+    active: native
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: file:///E:\file_tai_lieu\Course\do_an_tot_nghiep\do_an_tot_nghiep_main_folder\Laptopshop-ecommerce-project-thesis\backend\config-server\src\main\resources\config
+
+
+server:
+  port: 8888
