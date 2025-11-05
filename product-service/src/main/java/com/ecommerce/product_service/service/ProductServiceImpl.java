@@ -191,6 +191,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductDTO deleteProduct(Long productId) {
         Product product = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
 
+        productRepository.delete(product);
         return mapToDtoWithImage(product);
     }
 
@@ -224,6 +225,5 @@ public class ProductServiceImpl implements ProductService {
         productRepository.save(product);
     }
 
-    
 
 }
