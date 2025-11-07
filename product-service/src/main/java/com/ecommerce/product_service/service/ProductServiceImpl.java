@@ -112,6 +112,9 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private String constructImageUrl(String imageName) {
+        if (imageName == null || imageName.isBlank()) {
+            return null;
+        }
         return imageBaseUrl.endsWith("/") ? imageBaseUrl + imageName : imageBaseUrl + "/" + imageName;
     }
 
@@ -130,8 +133,7 @@ public class ProductServiceImpl implements ProductService {
         if (products.isEmpty()) {
             throw new APIException(category.getCategoryName() + " category does not have any products");
         }
-        List<ProductDTO> productDTOS = products.stream().map(product -> modelMapper.map(product, ProductDTO.class)).toList();
-
+        List<ProductDTO> productDTOS = products.stream().map(this::mapToDtoWithImage).toList();
 
         ProductResponse productResponse = new ProductResponse();
         productResponse.setContent(productDTOS);
@@ -160,7 +162,7 @@ public class ProductServiceImpl implements ProductService {
             throw new APIException("Product not found with keyword: " + keyword);
         }
 
-        List<ProductDTO> productDTOS = products.stream().map(product -> modelMapper.map(product, ProductDTO.class)).toList();
+        List<ProductDTO> productDTOS = products.stream().map(this::mapToDtoWithImage).toList();
         ProductResponse productResponse = new ProductResponse();
         productResponse.setContent(productDTOS);
         productResponse.setPageNumber(pageNumber);

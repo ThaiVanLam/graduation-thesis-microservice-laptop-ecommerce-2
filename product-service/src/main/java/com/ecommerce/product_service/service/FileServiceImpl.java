@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import static com.ecommerce.product_service.util.ImagePathUtils.resolveConfiguredPath;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.UUID;
@@ -19,18 +20,7 @@ public class FileServiceImpl implements FileService {
         String randomId = UUID.randomUUID().toString();
         String fileName = randomId.concat(originalFileName.substring(originalFileName.lastIndexOf(".")));
 
-        Path configuredPath = Paths.get(path);
-
-        if (!configuredPath.isAbsolute()) {
-            Path baseDir = Paths.get("").toAbsolutePath();
-            if (!baseDir.endsWith("product-service")) {
-                Path productServiceDir = baseDir.resolve("product-service");
-                if (Files.exists(productServiceDir)) {
-                    baseDir = productServiceDir;
-                }
-            }
-            configuredPath = baseDir.resolve(configuredPath).normalize();
-        }
+        Path configuredPath = resolveConfiguredPath(path);
 
         Files.createDirectories(configuredPath);
         Path destinationFile = configuredPath.resolve(fileName);
