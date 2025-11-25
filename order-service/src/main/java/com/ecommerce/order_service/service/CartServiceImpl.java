@@ -194,53 +194,52 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    @Transactional
     public String createOrUpdateCartWithItems(List<CartItemDTO> cartItems) {
-        // Get user's email
+
         String emailId = authUtil.loggedInEmail();
 
-        // Check if an existing cart is available or create a new one
-        Cart existingCart = cartRepository.findCartByEmail(emailId);
-        if (existingCart == null) {
-            existingCart = new Cart();
-            existingCart.setTotalPrice(0.00);
-            existingCart.setUser(authUtil.loggedInUser());
-            existingCart = cartRepository.save(existingCart);
+        Cart cart = cartRepository.findCartByEmail(emailId);
+        if (cart == null) {
+            cart = new Cart();
+            cart.setUserEmail(emailId);
+            cart.setTotalPrice(0.0);
+            cart = cartRepository.save(cart);
         } else {
-            // Clear all current items in the existing cart
-            cartItemRepository.deleteAllByCartId(existingCart.getCartId());
+            cartItemRepository.deleteAllByCartId(cart.getCartId());
+            cart.getCartItems().clear();
+            cart.setTotalPrice(0.0);
         }
 
-        double totalPrice = 0.00;
+        double totalPrice = 0.0;
 
-        // Process each item in the request to add to the cart
         for (CartItemDTO cartItemDTO : cartItems) {
             Long productId = cartItemDTO.getProductDTO().getProductId();
             Integer quantity = cartItemDTO.getQuantity();
 
-            // Find the product by ID
-            Product product = productRepository.findById(productId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
+            ProductDTO product = productServiceClient.getProductById(productId);
+            if (product == null) {
+                throw new ResourceNotFoundException("Product", "productId", productId);
+            }
 
-            // Directly update product stock and total price
-            // product.setQuantity(product.getQuantity() - quantity);
-            totalPrice += product.getSpecialPrice() * quantity;
+            validateInventory(product, quantity, 0);
 
-            // Create and save cart item
             CartItem cartItem = new CartItem();
-            cartItem.setProduct(product);
-            cartItem.setCart(existingCart);
+            cartItem.setCart(cart);
             cartItem.setQuantity(quantity);
             cartItem.setProductPrice(product.getSpecialPrice());
             cartItem.setDiscount(product.getDiscount());
+            cartItem.setProductSnapshot(mapToSnapshot(product));
+
+            cart.getCartItems().add(cartItem);
             cartItemRepository.save(cartItem);
+
+            totalPrice += cartItem.getProductPrice() * quantity;
         }
 
-        // Update the cart's total price and save
-        existingCart.setTotalPrice(totalPrice);
-        cartRepository.save(existingCart);
+        cart.setTotalPrice(totalPrice);
+        cartRepository.save(cart);
         return "Cart created/updated with the new items successfully";
-        
-        return "";
     }
 
     private Cart createCart() {
