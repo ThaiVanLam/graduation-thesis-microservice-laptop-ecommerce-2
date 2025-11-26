@@ -208,7 +208,7 @@ public class CartServiceImpl implements CartService {
             cart = cartRepository.save(cart);
         } else {
             cartItemRepository.deleteAllByCartId(cart.getCartId());
-            cart.getCartItems().clear();
+//            cart.getCartItems().clear();
             cart.setTotalPrice(0.0);
         }
 
