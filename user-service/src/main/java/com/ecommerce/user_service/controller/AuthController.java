@@ -53,7 +53,7 @@ public class AuthController {
         String token = jwtUtils.generateToken(user);
         ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(token);
         List<String> roles = user.getRoles().stream().map(role -> role.getRoleName().name()).collect(Collectors.toList());
-        UserInfoResponse loginResponse = new UserInfoResponse(user.getUserId(), token, user.getUserName(), roles);
+        UserInfoResponse loginResponse = new UserInfoResponse(user.getUserId(), token, user.getUserName(), user.getEmail(), roles);
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString()).body(loginResponse);
     }
 
