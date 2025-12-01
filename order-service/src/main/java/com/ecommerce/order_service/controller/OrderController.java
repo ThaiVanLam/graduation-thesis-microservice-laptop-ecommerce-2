@@ -1,9 +1,11 @@
 package com.ecommerce.order_service.controller;
 
 
+import com.ecommerce.order_service.payload.AnalyticsOrderResponse;
 import com.ecommerce.order_service.payload.OrderDTO;
 import com.ecommerce.order_service.payload.OrderRequestDTO;
 import com.ecommerce.order_service.payload.StripePaymentDto;
+import com.ecommerce.order_service.service.AnalyticsService;
 import com.ecommerce.order_service.service.OrderService;
 import com.ecommerce.order_service.service.StripeService;
 import com.ecommerce.order_service.util.AuthUtil;
@@ -26,6 +28,9 @@ public class OrderController {
     @Autowired
     private StripeService stripeService;
 
+    @Autowired
+    private AnalyticsService analyticsService;
+
     @PostMapping("/order/users/payments/{paymentMethod}")
     public ResponseEntity<OrderDTO> orderProducts(@PathVariable String paymentMethod, @RequestBody OrderRequestDTO orderRequestDTO) {
         String emailId = authUtil.loggedInEmail();
@@ -39,5 +44,11 @@ public class OrderController {
         System.out.println("StripePaymentDTO Received " + stripePaymentDto);
         PaymentIntent paymentIntent = stripeService.paymentIntent(stripePaymentDto);
         return new ResponseEntity<>(paymentIntent.getClientSecret(), HttpStatus.CREATED);
+    }
+
+    @GetMapping("/admin/app/analytics")
+    public ResponseEntity<AnalyticsOrderResponse> getAnalytics() {
+        AnalyticsOrderResponse response = analyticsService.getAnalyticsData();
+        return new ResponseEntity<AnalyticsOrderResponse>(response, HttpStatus.OK);
     }
 }

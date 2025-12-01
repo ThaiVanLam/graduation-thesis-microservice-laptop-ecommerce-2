@@ -2,9 +2,11 @@ package com.ecommerce.product_service.controller;
 
 
 import com.ecommerce.product_service.config.AppConstants;
+import com.ecommerce.product_service.payload.AnalyticsProductResponse;
 import com.ecommerce.product_service.payload.InventoryUpdateRequest;
 import com.ecommerce.product_service.payload.ProductDTO;
 import com.ecommerce.product_service.payload.ProductResponse;
+import com.ecommerce.product_service.service.AnalyticsService;
 import com.ecommerce.product_service.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,9 @@ import java.io.IOException;
 public class ProductController {
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private AnalyticsService analyticsService;
 
     @PostMapping("/admin/categories/{categoryId}/product")
     public ResponseEntity<ProductDTO> addProduct(@Valid @RequestBody ProductDTO productDTO, @PathVariable Long categoryId) {
@@ -73,5 +78,11 @@ public class ProductController {
     public ResponseEntity<Void> reduceProductStock(@PathVariable Long productId, @RequestBody InventoryUpdateRequest request) {
         productService.reduceProductQuantity(productId, request.getQuantity());
         return ResponseEntity.accepted().build();
+    }
+
+    @GetMapping("/admin/app/analytics")
+    public ResponseEntity<AnalyticsProductResponse> getAnalytics() {
+        AnalyticsProductResponse response = analyticsService.getAnalyticsData();
+        return new ResponseEntity<AnalyticsProductResponse>(response, HttpStatus.OK);
     }
 }
