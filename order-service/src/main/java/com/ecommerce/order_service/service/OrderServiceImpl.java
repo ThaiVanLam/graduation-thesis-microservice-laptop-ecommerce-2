@@ -7,6 +7,7 @@ import com.ecommerce.order_service.exceptions.ResourceNotFoundException;
 import com.ecommerce.order_service.model.*;
 import com.ecommerce.order_service.payload.OrderDTO;
 import com.ecommerce.order_service.payload.OrderItemDTO;
+import com.ecommerce.order_service.payload.OrderResponse;
 import com.ecommerce.order_service.payload.ProductDTO;
 import com.ecommerce.order_service.repositories.CartRepository;
 import com.ecommerce.order_service.repositories.OrderItemRepository;
@@ -14,6 +15,10 @@ import com.ecommerce.order_service.repositories.OrderRepository;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -93,6 +98,28 @@ public class OrderServiceImpl implements OrderService {
         orderDTO.setAddressId(addressId);
 
         return orderDTO;
+    }
+
+    @Override
+    public OrderResponse getAllOrders(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
+        Page<Order> pageOrders = orderRepository.findAll(pageDetails);
+        List<Order> orders = pageOrders.getContent();
+        List<OrderDTO> orderDTOs = orders.stream()
+                .map(order -> modelMapper.map(order, OrderDTO.class))
+                .toList();
+        OrderResponse orderResponse = new OrderResponse();
+        orderResponse.setContent(orderDTOs);
+        orderResponse.setPageNumber(pageOrders.getNumber());
+        orderResponse.setPageSize(pageOrders.getSize());
+        orderResponse.setTotalElements(pageOrders.getTotalElements());
+        orderResponse.setTotalPages(pageOrders.getTotalPages());
+        orderResponse.setLastPage(pageOrders.isLast());
+        return orderResponse;
     }
 
     private OrderItemDTO mapToOrderItemDTO(OrderItem orderItem) {

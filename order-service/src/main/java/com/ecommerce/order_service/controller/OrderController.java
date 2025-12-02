@@ -1,10 +1,8 @@
 package com.ecommerce.order_service.controller;
 
 
-import com.ecommerce.order_service.payload.AnalyticsOrderResponse;
-import com.ecommerce.order_service.payload.OrderDTO;
-import com.ecommerce.order_service.payload.OrderRequestDTO;
-import com.ecommerce.order_service.payload.StripePaymentDto;
+import com.ecommerce.order_service.config.AppConstants;
+import com.ecommerce.order_service.payload.*;
 import com.ecommerce.order_service.service.AnalyticsService;
 import com.ecommerce.order_service.service.OrderService;
 import com.ecommerce.order_service.service.StripeService;
@@ -50,5 +48,16 @@ public class OrderController {
     public ResponseEntity<AnalyticsOrderResponse> getAnalytics() {
         AnalyticsOrderResponse response = analyticsService.getAnalyticsData();
         return new ResponseEntity<AnalyticsOrderResponse>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/admin/orders")
+    public ResponseEntity<OrderResponse> getAllOrders(
+            @RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
+            @RequestParam(name = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize,
+            @RequestParam(name = "sortBy", defaultValue = AppConstants.SORT_ORDERS_BY, required = false) String sortBy,
+            @RequestParam(name = "sortOrder", defaultValue = AppConstants.SORT_DIR, required = false) String sortOrder
+    ) {
+        OrderResponse orderResponse = orderService.getAllOrders(pageNumber, pageSize, sortBy, sortOrder);
+        return new ResponseEntity<OrderResponse>(orderResponse, HttpStatus.OK);
     }
 }
