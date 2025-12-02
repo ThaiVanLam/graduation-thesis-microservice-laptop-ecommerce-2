@@ -271,6 +271,7 @@ public class CartServiceImpl implements CartService {
         dto.setProductId(snapshot.getProductId());
         dto.setProductName(snapshot.getProductName());
         dto.setImage(snapshot.getImage());
+        dto.setDescription(snapshot.getDescription());
         dto.setPrice(snapshot.getPrice() == null ? 0.0 : snapshot.getPrice());
         dto.setDiscount(snapshot.getDiscount() == null ? 0.0 : snapshot.getDiscount());
         dto.setSpecialPrice(snapshot.getSpecialPrice() == null ? 0.0 : snapshot.getSpecialPrice());
@@ -283,6 +284,7 @@ public class CartServiceImpl implements CartService {
                 product.getProductId(),
                 product.getProductName(),
                 product.getImage(),
+                product.getDescription(),
                 product.getPrice(),
                 product.getDiscount(),
                 product.getSpecialPrice()
@@ -297,6 +299,7 @@ public class CartServiceImpl implements CartService {
         }
         snapshot.setProductName(product.getProductName());
         snapshot.setImage(product.getImage());
+        snapshot.setDescription(product.getDescription());
         snapshot.setPrice(product.getPrice());
         snapshot.setDiscount(product.getDiscount());
         snapshot.setSpecialPrice(product.getSpecialPrice());

@@ -13,6 +13,7 @@ public class ProductSnapshot {
     private Long productId;
     private String productName;
     private String image;
+    private String description;
     private Double price;
     private Double discount;
     private Double specialPrice;

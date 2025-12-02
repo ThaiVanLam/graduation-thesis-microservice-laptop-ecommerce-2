@@ -5,10 +5,7 @@ import com.ecommerce.order_service.client.ProductServiceClient;
 import com.ecommerce.order_service.exceptions.APIException;
 import com.ecommerce.order_service.exceptions.ResourceNotFoundException;
 import com.ecommerce.order_service.model.*;
-import com.ecommerce.order_service.payload.OrderDTO;
-import com.ecommerce.order_service.payload.OrderItemDTO;
-import com.ecommerce.order_service.payload.OrderResponse;
-import com.ecommerce.order_service.payload.ProductDTO;
+import com.ecommerce.order_service.payload.*;
 import com.ecommerce.order_service.repositories.CartRepository;
 import com.ecommerce.order_service.repositories.OrderItemRepository;
 import com.ecommerce.order_service.repositories.OrderRepository;
@@ -110,7 +107,7 @@ public class OrderServiceImpl implements OrderService {
         Page<Order> pageOrders = orderRepository.findAll(pageDetails);
         List<Order> orders = pageOrders.getContent();
         List<OrderDTO> orderDTOs = orders.stream()
-                .map(order -> modelMapper.map(order, OrderDTO.class))
+                .map(this::mapToOrderDTO)
                 .toList();
         OrderResponse orderResponse = new OrderResponse();
         orderResponse.setContent(orderDTOs);
@@ -134,6 +131,7 @@ public class OrderServiceImpl implements OrderService {
             productDTO.setProductId(orderItem.getProductSnapshot().getProductId());
             productDTO.setProductName(orderItem.getProductSnapshot().getProductName());
             productDTO.setImage(orderItem.getProductSnapshot().getImage());
+            productDTO.setDescription(orderItem.getProductSnapshot().getDescription());
             productDTO.setPrice(orderItem.getProductSnapshot().getPrice() == null ? 0.0 : orderItem.getProductSnapshot().getPrice());
             productDTO.setDiscount(orderItem.getProductSnapshot().getDiscount() == null ? 0.0 : orderItem.getProductSnapshot().getDiscount());
             productDTO.setSpecialPrice(orderItem.getProductSnapshot().getSpecialPrice() == null ? 0.0 : orderItem.getProductSnapshot().getSpecialPrice());
@@ -141,5 +139,27 @@ public class OrderServiceImpl implements OrderService {
         }
         dto.setProduct(productDTO);
         return dto;
+    }
+
+    // Thêm method mới
+    private OrderDTO mapToOrderDTO(Order order) {
+        OrderDTO orderDTO = new OrderDTO();
+        orderDTO.setOrderId(order.getOrderId());
+        orderDTO.setEmail(order.getEmail());
+        orderDTO.setOrderDate(order.getOrderDate());
+        orderDTO.setTotalAmount(order.getTotalAmount());
+        orderDTO.setOrderStatus(order.getOrderStatus());
+        orderDTO.setAddressId(order.getAddressId());
+
+        if (order.getPayment() != null) {
+            orderDTO.setPayment(modelMapper.map(order.getPayment(), PaymentDTO.class));
+        }
+
+        orderDTO.setOrderItems(order.getOrderItems().stream()
+                .filter(Objects::nonNull)
+                .map(this::mapToOrderItemDTO)
+                .collect(Collectors.toList()));
+
+        return orderDTO;
     }
 }
