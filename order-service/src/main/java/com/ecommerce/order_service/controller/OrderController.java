@@ -60,4 +60,11 @@ public class OrderController {
         OrderResponse orderResponse = orderService.getAllOrders(pageNumber, pageSize, sortBy, sortOrder);
         return new ResponseEntity<OrderResponse>(orderResponse, HttpStatus.OK);
     }
+
+    @PutMapping("/admin/orders/{orderId}/status")
+    public ResponseEntity<OrderDTO> updateOrderStatus(@PathVariable Long orderId,
+                                                      @RequestBody OrderStatusUpdateDto orderStatusUpdateDto) {
+        OrderDTO order = orderService.updateOrder(orderId, orderStatusUpdateDto.getStatus());
+        return new ResponseEntity<OrderDTO>(order, HttpStatus.OK);
+    }
 }
