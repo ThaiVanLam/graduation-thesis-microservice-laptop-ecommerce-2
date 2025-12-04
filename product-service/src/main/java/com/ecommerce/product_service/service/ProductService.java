@@ -25,4 +25,6 @@ public interface ProductService {
     ProductDTO getProduct(Long productId);
 
     void reduceProductQuantity(Long productId, int quantity);
+
+    ProductResponse getAllProductsForAdmin(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder);
 }
