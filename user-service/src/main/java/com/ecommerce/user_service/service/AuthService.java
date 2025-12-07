@@ -7,6 +7,7 @@ import com.ecommerce.user_service.security.response.MessageResponse;
 import com.ecommerce.user_service.security.response.UserInfoResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 
 public interface AuthService {
@@ -15,4 +16,8 @@ public interface AuthService {
     ResponseEntity<MessageResponse> register(@Valid SignupRequest signupRequest);
 
     UserInfoResponse getCurrentUserDetails(HttpServletRequest httpServletRequest);
+
+    ResponseCookie logoutUser();
+
+    String getUsername(HttpServletRequest httpServletRequest);
 }

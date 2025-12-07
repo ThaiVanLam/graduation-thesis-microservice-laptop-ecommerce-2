@@ -33,15 +33,6 @@ public class AuthController {
     private JwtUtils jwtUtils;
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private RoleRepository roleRepository;
-
-    @Autowired
     private AuthService authService;
 
     @PostMapping("/signin")
@@ -58,14 +49,7 @@ public class AuthController {
 
     @GetMapping("/username")
     public ResponseEntity<?> currentUserName(HttpServletRequest httpServletRequest) {
-        String jwt = jwtUtils.getJwtFromCookies(httpServletRequest);
-        if (jwt == null || !jwtUtils.validateJwtToken(jwt)) {
-            System.out.println(jwt);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new MessageResponse("Invalid or missing authentication token"));
-        }
-        String username = jwtUtils.getUserNameFromJwtToken(jwt);
-        return ResponseEntity.ok(username);
+        return ResponseEntity.ok(authService.getUsername(httpServletRequest));
     }
 
     @GetMapping("/user")
@@ -75,7 +59,7 @@ public class AuthController {
 
     @PostMapping("/signout")
     public ResponseEntity<?> signoutUser() {
-        ResponseCookie cookie = jwtUtils.getCleanJwtCookie();
+        ResponseCookie cookie = authService.logoutUser();
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(new MessageResponse("You've been signed out!"));
     }
 }

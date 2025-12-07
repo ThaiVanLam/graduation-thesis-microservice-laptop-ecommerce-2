@@ -112,4 +112,21 @@ public class AuthServiceImpl implements AuthService {
                 .collect(Collectors.toList());
         UserInfoResponse response = new UserInfoResponse(user.getUserId(), user.getUserName(), roles);
     }
+
+    @Override
+    public ResponseCookie logoutUser() {
+        return jwtUtils.getCleanJwtCookie();
+    }
+
+    @Override
+    public String getUsername(HttpServletRequest httpServletRequest) {
+        String jwt = jwtUtils.getJwtFromCookies(httpServletRequest);
+        if (jwt == null || !jwtUtils.validateJwtToken(jwt)) {
+            System.out.println(jwt);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new MessageResponse("Invalid or missing authentication token"));
+        }
+        String username = jwtUtils.getUserNameFromJwtToken(jwt);
+        return username;
+    }
 }
