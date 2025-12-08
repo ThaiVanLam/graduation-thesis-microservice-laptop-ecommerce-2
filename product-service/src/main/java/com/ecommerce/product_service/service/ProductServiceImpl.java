@@ -264,17 +264,13 @@ public class ProductServiceImpl implements ProductService {
 
         Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
 
-        User user = authUtil.loggedInUser();
-        Page<Product> pageProducts = productRepository.findByUser(user, pageDetails);
+        String sellerEmail = authUtil.loggedInEmail();
+        Page<Product> pageProducts = productRepository.findBySellerEmail(sellerEmail, pageDetails);
 
         List<Product> products = pageProducts.getContent();
 
         List<ProductDTO> productDTOS = products.stream()
-                .map(product -> {
-                    ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
-                    productDTO.setImage(constructImageUrl(product.getImage()));
-                    return productDTO;
-                })
+                .map(this::mapToDtoWithImage)
                 .toList();
 
         ProductResponse productResponse = new ProductResponse();
