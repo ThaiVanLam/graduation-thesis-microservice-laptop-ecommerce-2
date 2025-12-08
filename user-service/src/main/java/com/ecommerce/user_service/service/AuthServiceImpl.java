@@ -19,6 +19,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -43,10 +44,7 @@ public class AuthServiceImpl implements AuthService {
         Optional<User> optionalUser = userRepository.findByUserName(loginRequest.getUsername());
 
         if (optionalUser.isEmpty() || !passwordEncoder.matches(loginRequest.getPassword(), optionalUser.get().getPassword())) {
-            Map<String, Object> map = new HashMap<>();
-            map.put("message", "Bad credentials");
-            map.put("status", false);
-            return new ResponseEntity<>(map, HttpStatus.NOT_FOUND);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Bad credentials");
         }
 
         User user = optionalUser.get();
@@ -101,8 +99,7 @@ public class AuthServiceImpl implements AuthService {
     public UserInfoResponse getCurrentUserDetails(HttpServletRequest httpServletRequest) {
         String jwt = jwtUtils.getJwtFromCookies(httpServletRequest);
         if (jwt == null || !jwtUtils.validateJwtToken(jwt)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new MessageResponse("Invalid or missing authentication token"));
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or missing authentication token");
         }
         String username = jwtUtils.getUserNameFromJwtToken(jwt);
         User user = userRepository.findByUserName(username)
@@ -110,7 +107,7 @@ public class AuthServiceImpl implements AuthService {
         List<String> roles = user.getRoles().stream()
                 .map(role -> role.getRoleName().name())
                 .collect(Collectors.toList());
-        UserInfoResponse response = new UserInfoResponse(user.getUserId(), user.getUserName(), roles);
+        return new UserInfoResponse(user.getUserId(), user.getUserName(), roles);
     }
 
     @Override
@@ -122,9 +119,7 @@ public class AuthServiceImpl implements AuthService {
     public String getUsername(HttpServletRequest httpServletRequest) {
         String jwt = jwtUtils.getJwtFromCookies(httpServletRequest);
         if (jwt == null || !jwtUtils.validateJwtToken(jwt)) {
-            System.out.println(jwt);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new MessageResponse("Invalid or missing authentication token"));
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or missing authentication token");
         }
         String username = jwtUtils.getUserNameFromJwtToken(jwt);
         return username;

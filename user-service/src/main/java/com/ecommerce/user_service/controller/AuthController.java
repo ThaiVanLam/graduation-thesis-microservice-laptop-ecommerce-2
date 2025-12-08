@@ -54,7 +54,7 @@ public class AuthController {
 
     @GetMapping("/user")
     public ResponseEntity<?> getUserDetails(HttpServletRequest httpServletRequest) {
-        return ResponseEntity.ok(authService.getCurrentUserDetails(HttpServletRequest httpServletRequest));
+        return ResponseEntity.ok(authService.getCurrentUserDetails(httpServletRequest));
     }
 
     @PostMapping("/signout")
