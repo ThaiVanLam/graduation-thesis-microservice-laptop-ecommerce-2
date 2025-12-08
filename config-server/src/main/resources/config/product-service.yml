@@ -15,6 +15,11 @@ spring:
     app:
       jwtCookieName: springBootEcom
 
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
 project:
   image: images/
 

@@ -17,4 +17,6 @@ public class ProductSnapshot {
     private Double price;
     private Double discount;
     private Double specialPrice;
+    private Long sellerId;
+    private String sellerEmail;
 }

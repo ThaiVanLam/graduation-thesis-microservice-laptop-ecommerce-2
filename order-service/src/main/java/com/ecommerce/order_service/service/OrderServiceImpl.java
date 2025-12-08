@@ -141,30 +141,37 @@ public class OrderServiceImpl implements OrderService {
 
         String sellerEmail = authUtil.loggedInEmail();
 
-        Page<Order> pageOrders = orderRepository.findAll(pageDetails);
+        List<Order> sortedOrders = orderRepository.findAll(sortByAndOrder);
 
-        List<Order> sellerOrders = pageOrders.getContent().stream()
+        List<Order> sellerOrders = sortedOrders.stream()
+                .filter(order -> order.getOrderItems() != null)
                 .filter(order -> order.getOrderItems().stream()
                         .anyMatch(orderItem -> {
                             var product = orderItem.getProductSnapshot();
                             if (product == null) {
                                 return false;
                             }
-                            return product.getUser().getUserId().equals(
-                                    seller.getUserId());
+                            return sellerEmail.equalsIgnoreCase(product.getSellerEmail());
                         }))
                 .toList();
 
-        List<OrderDTO> orderDTOs = sellerOrders.stream()
-                .map(order -> modelMapper.map(order, OrderDTO.class))
+        int totalElements = sellerOrders.size();
+        int fromIndex = Math.min(pageNumber * pageSize, totalElements);
+        int toIndex = Math.min(fromIndex + pageSize, totalElements);
+        List<Order> pagedOrders = sellerOrders.subList(fromIndex, toIndex);
+
+        List<OrderDTO> orderDTOs = pagedOrders.stream()
+                .map(this::mapToOrderDTO)
                 .toList();
+
         OrderResponse orderResponse = new OrderResponse();
         orderResponse.setContent(orderDTOs);
-        orderResponse.setPageNumber(pageOrders.getNumber());
-        orderResponse.setPageSize(pageOrders.getSize());
-        orderResponse.setTotalElements(pageOrders.getTotalElements());
-        orderResponse.setTotalPages(pageOrders.getTotalPages());
-        orderResponse.setLastPage(pageOrders.isLast());
+        orderResponse.setPageNumber(pageNumber);
+        orderResponse.setPageSize(pageSize);
+        orderResponse.setTotalElements((long) totalElements);
+        int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+        orderResponse.setTotalPages(totalPages);
+        orderResponse.setLastPage(pageNumber >= totalPages - 1);
         return orderResponse;
     }
 
@@ -185,6 +192,8 @@ public class OrderServiceImpl implements OrderService {
             productDTO.setDiscount(orderItem.getProductSnapshot().getDiscount() == null ? 0.0 : orderItem.getProductSnapshot().getDiscount());
             productDTO.setSpecialPrice(orderItem.getProductSnapshot().getSpecialPrice() == null ? 0.0 : orderItem.getProductSnapshot().getSpecialPrice());
             productDTO.setQuantity(orderItem.getQuantity());
+            productDTO.setSellerId(orderItem.getProductSnapshot().getSellerId());
+            productDTO.setSellerEmail(orderItem.getProductSnapshot().getSellerEmail());
         }
         dto.setProduct(productDTO);
         return dto;

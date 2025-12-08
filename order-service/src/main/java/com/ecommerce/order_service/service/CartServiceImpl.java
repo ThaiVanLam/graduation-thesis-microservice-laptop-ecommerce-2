@@ -276,6 +276,8 @@ public class CartServiceImpl implements CartService {
         dto.setDiscount(snapshot.getDiscount() == null ? 0.0 : snapshot.getDiscount());
         dto.setSpecialPrice(snapshot.getSpecialPrice() == null ? 0.0 : snapshot.getSpecialPrice());
         dto.setQuantity(item.getQuantity());
+        dto.setSellerId(snapshot.getSellerId());
+        dto.setSellerEmail(snapshot.getSellerEmail());
         return dto;
     }
 
@@ -287,7 +289,9 @@ public class CartServiceImpl implements CartService {
                 product.getDescription(),
                 product.getPrice(),
                 product.getDiscount(),
-                product.getSpecialPrice()
+                product.getSpecialPrice(),
+                product.getSellerId(),
+                product.getSellerEmail()
         );
     }
 
@@ -303,6 +307,8 @@ public class CartServiceImpl implements CartService {
         snapshot.setPrice(product.getPrice());
         snapshot.setDiscount(product.getDiscount());
         snapshot.setSpecialPrice(product.getSpecialPrice());
+        snapshot.setSellerId(product.getSellerId());
+        snapshot.setSellerEmail(product.getSellerEmail());
     }
 
     private void validateInventory(ProductDTO product, Integer quantity, int existingQuantity) {

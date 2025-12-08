@@ -33,6 +33,10 @@ public class Product {
     private double discount;
     private double specialPrice;
 
+    private Long sellerId;
+
+    private String sellerEmail;
+
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
