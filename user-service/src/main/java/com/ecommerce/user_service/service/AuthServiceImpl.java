@@ -4,6 +4,7 @@ import com.ecommerce.user_service.model.AppRole;
 import com.ecommerce.user_service.model.Role;
 import com.ecommerce.user_service.model.User;
 import com.ecommerce.user_service.payload.AuthenticationResult;
+import com.ecommerce.user_service.payload.UserDTO;
 import com.ecommerce.user_service.payload.UserResponse;
 import com.ecommerce.user_service.repositories.RoleRepository;
 import com.ecommerce.user_service.repositories.UserRepository;
@@ -14,6 +15,7 @@ import com.ecommerce.user_service.security.response.MessageResponse;
 import com.ecommerce.user_service.security.response.UserInfoResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,6 +43,10 @@ public class AuthServiceImpl implements AuthService {
 
     @Autowired
     private RoleRepository roleRepository;
+
+    @Autowired
+    private ModelMapper modelMapper;
+
 
     @Override
     public AuthenticationResult login(LoginRequest loginRequest) {
@@ -129,7 +135,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public UserResponse getAllSellers(Pageable pageDetails) {
+    public UserResponse getAllSellers(Pageable pageable) {
         Page<User> allUsers = userRepository.findByRoleName(AppRole.ROLE_SELLER, pageable);
         List<UserDTO> userDtos = allUsers.getContent()
                 .stream()

@@ -1,6 +1,7 @@
 package com.ecommerce.user_service.service;
 
 import com.ecommerce.user_service.payload.AuthenticationResult;
+import com.ecommerce.user_service.payload.UserResponse;
 import com.ecommerce.user_service.security.request.LoginRequest;
 import com.ecommerce.user_service.security.request.SignupRequest;
 import com.ecommerce.user_service.security.response.MessageResponse;
@@ -22,5 +23,5 @@ public interface AuthService {
 
     String getUsername(HttpServletRequest httpServletRequest);
 
-    UserResponse getAllSellers(Pageable pageDetails);
+    UserResponse getAllSellers(Pageable pageable);
 }
