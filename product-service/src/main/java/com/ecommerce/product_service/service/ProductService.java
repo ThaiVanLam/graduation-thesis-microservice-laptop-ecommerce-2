@@ -27,4 +27,6 @@ public interface ProductService {
     void reduceProductQuantity(Long productId, int quantity);
 
     ProductResponse getAllProductsForAdmin(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder);
+
+    ProductResponse getAllProductsForSeller(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder);
 }
