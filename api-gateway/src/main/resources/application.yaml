@@ -75,22 +75,26 @@ gateway:
       - /v3/api-docs/**
       - /swagger-ui/**
 
-    role-mappings: []
-#    role-mappings:
-#      - pattern: /product-manager/api/admin/**
-#        roles: [ROLE_ADMIN]
-#      - pattern: /product-manager/api/products/**
-#        roles: [ROLE_SELLER, ROLE_ADMIN]
-#      - pattern: /order-manager/api/carts/**
-#        roles: [ROLE_USER, ROLE_ADMIN]
-#      - pattern: /order-manager/api/order/**
-#        roles: [ROLE_USER, ROLE_ADMIN]
-#      - pattern: /user-manager/api/addresses/**
-#        roles: [ROLE_USER, ROLE_ADMIN]
-#      - pattern: /user-manager/api/users/addresses/**
-#        roles: [ROLE_USER, ROLE_ADMIN]
-#      - pattern: /user-manager/api/admin/**
-#        roles: [ROLE_ADMIN]
+    #    role-mappings: []
+    role-mappings:
+      - pattern: /product-manager/api/admin/**
+        roles: [ ROLE_ADMIN ]
+      #      - pattern: /product-manager/api/products/**
+      #        roles: [ROLE_SELLER, ROLE_ADMIN]
+      #      - pattern: /order-manager/api/carts/**
+      #        roles: [ROLE_USER, ROLE_ADMIN]
+      #      - pattern: /order-manager/api/order/**
+      #        roles: [ROLE_USER, ROLE_ADMIN]
+      #      - pattern: /user-manager/api/addresses/**
+      #        roles: [ROLE_USER, ROLE_ADMIN]
+      #      - pattern: /user-manager/api/users/addresses/**
+      #        roles: [ROLE_USER, ROLE_ADMIN]
+      - pattern: /user-manager/api/admin/**
+        roles: [ ROLE_ADMIN ]
+      - pattern: /order-manager/api/admin/**
+        roles: [ ROLE_ADMIN ]
+      - pattern: /order-manager/api/seller/**
+        roles: [ ROLE_ADMIN, ROLE_SELLER ]
 
 server:
   port: 8080
