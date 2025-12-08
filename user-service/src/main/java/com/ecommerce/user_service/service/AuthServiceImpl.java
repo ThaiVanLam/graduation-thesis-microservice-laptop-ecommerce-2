@@ -4,6 +4,7 @@ import com.ecommerce.user_service.model.AppRole;
 import com.ecommerce.user_service.model.Role;
 import com.ecommerce.user_service.model.User;
 import com.ecommerce.user_service.payload.AuthenticationResult;
+import com.ecommerce.user_service.payload.UserResponse;
 import com.ecommerce.user_service.repositories.RoleRepository;
 import com.ecommerce.user_service.repositories.UserRepository;
 import com.ecommerce.user_service.security.jwt.JwtUtils;
@@ -14,6 +15,8 @@ import com.ecommerce.user_service.security.response.UserInfoResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -123,5 +126,23 @@ public class AuthServiceImpl implements AuthService {
         }
         String username = jwtUtils.getUserNameFromJwtToken(jwt);
         return username;
+    }
+
+    @Override
+    public UserResponse getAllSellers(Pageable pageDetails) {
+        Page<User> allUsers = userRepository.findByRoleName(AppRole.ROLE_SELLER, pageable);
+        List<UserDTO> userDtos = allUsers.getContent()
+                .stream()
+                .map(p -> modelMapper.map(p, UserDTO.class))
+                .collect(Collectors.toList());
+
+        UserResponse response = new UserResponse();
+        response.setContent(userDtos);
+        response.setPageNumber(allUsers.getNumber());
+        response.setPageSize(allUsers.getSize());
+        response.setTotalElements(allUsers.getTotalElements());
+        response.setTotalPages(allUsers.getTotalPages());
+        response.setLastPage(allUsers.isLast());
+        return response;
     }
 }
