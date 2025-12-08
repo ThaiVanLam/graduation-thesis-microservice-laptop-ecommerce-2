@@ -9,6 +9,7 @@ import com.ecommerce.order_service.payload.*;
 import com.ecommerce.order_service.repositories.CartRepository;
 import com.ecommerce.order_service.repositories.OrderItemRepository;
 import com.ecommerce.order_service.repositories.OrderRepository;
+import com.ecommerce.order_service.util.AuthUtil;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private ProductServiceClient productServiceClient;
+
+    @Autowired
+    private AuthUtil authUtil;
 
     @Override
     @Transactional
@@ -122,10 +126,46 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderDTO updateOrder(Long orderId, String status) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order","orderId",orderId));
+                .orElseThrow(() -> new ResourceNotFoundException("Order", "orderId", orderId));
         order.setOrderStatus(status);
         orderRepository.save(order);
         return mapToOrderDTO(order);
+    }
+
+    @Override
+    public OrderResponse getAllSellerOrders(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
+
+        String sellerEmail = authUtil.loggedInEmail();
+
+        Page<Order> pageOrders = orderRepository.findAll(pageDetails);
+
+        List<Order> sellerOrders = pageOrders.getContent().stream()
+                .filter(order -> order.getOrderItems().stream()
+                        .anyMatch(orderItem -> {
+                            var product = orderItem.getProductSnapshot();
+                            if (product == null) {
+                                return false;
+                            }
+                            return product.getUser().getUserId().equals(
+                                    seller.getUserId());
+                        }))
+                .toList();
+
+        List<OrderDTO> orderDTOs = sellerOrders.stream()
+                .map(order -> modelMapper.map(order, OrderDTO.class))
+                .toList();
+        OrderResponse orderResponse = new OrderResponse();
+        orderResponse.setContent(orderDTOs);
+        orderResponse.setPageNumber(pageOrders.getNumber());
+        orderResponse.setPageSize(pageOrders.getSize());
+        orderResponse.setTotalElements(pageOrders.getTotalElements());
+        orderResponse.setTotalPages(pageOrders.getTotalPages());
+        orderResponse.setLastPage(pageOrders.isLast());
+        return orderResponse;
     }
 
     private OrderItemDTO mapToOrderItemDTO(OrderItem orderItem) {
