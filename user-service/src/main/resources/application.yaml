@@ -3,5 +3,16 @@ spring:
     name: user-service
   config:
     import: optional:configserver:http://localhost:8888
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+queue:
+  notification:
+    queue: notification-queue
+    exchange: notification-exchange
+    routing-key: notification-routing-key
 
 

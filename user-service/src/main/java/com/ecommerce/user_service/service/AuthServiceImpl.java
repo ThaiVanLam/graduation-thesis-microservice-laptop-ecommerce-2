@@ -47,6 +47,9 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private ModelMapper modelMapper;
 
+    @Autowired
+    private NotificationProducer notificationProducer;
+
 
     @Override
     public AuthenticationResult login(LoginRequest loginRequest) {
@@ -101,6 +104,7 @@ public class AuthServiceImpl implements AuthService {
         }
         user.setRoles(roles);
         userRepository.save(user);
+        notificationProducer.sendRegistrationEmail(user.getEmail(), user.getUserName());
         return ResponseEntity.ok(new MessageResponse("User registered successfully"));
     }
 
