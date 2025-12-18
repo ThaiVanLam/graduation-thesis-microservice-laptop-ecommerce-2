@@ -48,6 +48,9 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private AuthUtil authUtil;
 
+    @Autowired
+    private NotificationPublisher notificationPublisher;
+
     @Override
     @Transactional
     public OrderDTO placeOrder(String emailId, Long addressId, String paymentMethod, String pgName, String pgPaymentId, String pgStatus, String pgResponseMessage) {
@@ -97,6 +100,11 @@ public class OrderServiceImpl implements OrderService {
         OrderDTO orderDTO = modelMapper.map(savedOrder, OrderDTO.class);
         orderDTO.setOrderItems(orderItems.stream().filter(Objects::nonNull).map(this::mapToOrderItemDTO).collect(Collectors.toList()));
         orderDTO.setAddressId(addressId);
+
+        String subject = "Order Confirmation - Order " + savedOrder.getOrderId();
+        String body = "Thank you for your purchase! Your order " + savedOrder.getOrderId()
+                + " has been placed successfully with total amount " + savedOrder.getTotalAmount() + ".";
+        notificationPublisher.sendEmailNotification(new EmailDetails(emailId, body, subject));
 
         return orderDTO;
     }
