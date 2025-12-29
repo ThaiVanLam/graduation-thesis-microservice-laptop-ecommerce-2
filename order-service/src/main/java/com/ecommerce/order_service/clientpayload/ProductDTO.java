@@ -1,4 +1,4 @@
-package com.ecommerce.order_service.payload;
+package com.ecommerce.order_service.clientpayload;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

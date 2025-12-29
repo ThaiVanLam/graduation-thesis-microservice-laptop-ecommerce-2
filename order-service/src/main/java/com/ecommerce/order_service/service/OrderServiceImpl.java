@@ -2,6 +2,7 @@ package com.ecommerce.order_service.service;
 
 
 import com.ecommerce.order_service.client.ProductServiceClient;
+import com.ecommerce.order_service.clientpayload.ProductDTO;
 import com.ecommerce.order_service.exceptions.APIException;
 import com.ecommerce.order_service.exceptions.ResourceNotFoundException;
 import com.ecommerce.order_service.model.*;

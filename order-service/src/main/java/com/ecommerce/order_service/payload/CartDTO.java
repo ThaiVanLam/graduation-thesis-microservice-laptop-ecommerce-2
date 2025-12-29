@@ -1,5 +1,6 @@
 package com.ecommerce.order_service.payload;
 
+import com.ecommerce.order_service.clientpayload.ProductDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -1,4 +1,4 @@
-package vn.vti.dtn2504.notificationservice.dto;
+package vn.vti.dtn2504.notificationservice.payload;
 
 import lombok.*;
 

@@ -3,12 +3,11 @@ package com.ecommerce.product_service.service;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import static com.ecommerce.product_service.util.ImagePathUtils.resolveConfiguredPath;
-import java.nio.file.Paths;
+import static com.ecommerce.product_service.imageutil.ImagePathUtils.resolveConfiguredPath;
+
 import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 

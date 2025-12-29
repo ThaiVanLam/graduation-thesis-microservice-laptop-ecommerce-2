@@ -9,7 +9,7 @@ import com.ecommerce.order_service.model.CartItem;
 import com.ecommerce.order_service.model.ProductSnapshot;
 import com.ecommerce.order_service.payload.CartDTO;
 import com.ecommerce.order_service.payload.CartItemDTO;
-import com.ecommerce.order_service.payload.ProductDTO;
+import com.ecommerce.order_service.clientpayload.ProductDTO;
 import com.ecommerce.order_service.repositories.CartItemRepository;
 import com.ecommerce.order_service.repositories.CartRepository;
 import com.ecommerce.order_service.util.AuthUtil;
@@ -18,11 +18,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class CartServiceImpl implements CartService {
@@ -96,7 +94,11 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public CartDTO getCart(String emailId, Long cartId) {
+    public CartDTO getCart() {
+        String emailId = authUtil.loggedInEmail();
+        Cart cartByEmail = cartRepository.findCartByEmail(emailId);
+        Long cartId = cartByEmail.getCartId();
+
         Cart cart = cartRepository.findCartByEmailAndCartId(emailId, cartId);
         if (cart == null) {
             throw new ResourceNotFoundException("Cart", "cartId", cartId);

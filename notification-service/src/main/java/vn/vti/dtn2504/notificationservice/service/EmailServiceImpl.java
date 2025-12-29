@@ -1,12 +1,11 @@
-package vn.vti.dtn2504.notificationservice.service.impl;
+package vn.vti.dtn2504.notificationservice.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
-import vn.vti.dtn2504.notificationservice.entity.EmailDetails;
-import vn.vti.dtn2504.notificationservice.service.EmailService;
+import vn.vti.dtn2504.notificationservice.payload.EmailDetails;
 
 @Service
 public class EmailServiceImpl implements EmailService {

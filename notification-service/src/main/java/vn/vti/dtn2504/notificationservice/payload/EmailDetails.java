@@ -1,4 +1,4 @@
-package vn.vti.dtn2504.notificationservice.entity;
+package vn.vti.dtn2504.notificationservice.payload;
 
 // Importing required classes
 import lombok.AllArgsConstructor;

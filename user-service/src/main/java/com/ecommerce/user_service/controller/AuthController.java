@@ -2,39 +2,28 @@ package com.ecommerce.user_service.controller;
 
 
 import com.ecommerce.user_service.config.AppConstants;
-import com.ecommerce.user_service.model.AppRole;
-import com.ecommerce.user_service.model.Role;
-import com.ecommerce.user_service.model.User;
 import com.ecommerce.user_service.payload.AuthenticationResult;
 import com.ecommerce.user_service.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
-import com.ecommerce.user_service.repositories.RoleRepository;
-import com.ecommerce.user_service.repositories.UserRepository;
 import com.ecommerce.user_service.security.jwt.JwtUtils;
 import com.ecommerce.user_service.security.request.LoginRequest;
 import com.ecommerce.user_service.security.request.SignupRequest;
 import com.ecommerce.user_service.security.response.MessageResponse;
-import com.ecommerce.user_service.security.response.UserInfoResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-    @Autowired
-    private JwtUtils jwtUtils;
 
     @Autowired
     private AuthService authService;

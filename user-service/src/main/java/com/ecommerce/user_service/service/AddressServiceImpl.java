@@ -27,9 +27,6 @@ public class AddressServiceImpl implements AddressService {
     @Autowired
     private AuthUtil authUtil;
 
-    @Autowired
-    private UserRepository userRepository;
-
     @Override
     public AddressDTO createAddress(AddressDTO addressDTO) {
         // Get current logged-in user

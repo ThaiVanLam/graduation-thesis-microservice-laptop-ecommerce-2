@@ -1,7 +1,7 @@
 package com.ecommerce.order_service.client;
 
 import com.ecommerce.order_service.exceptions.ResourceNotFoundException;
-import com.ecommerce.order_service.payload.ProductDTO;
+import com.ecommerce.order_service.clientpayload.ProductDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;

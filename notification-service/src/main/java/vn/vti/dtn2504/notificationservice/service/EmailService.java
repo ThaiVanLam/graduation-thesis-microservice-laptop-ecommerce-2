@@ -1,6 +1,6 @@
 package vn.vti.dtn2504.notificationservice.service;
 
-import vn.vti.dtn2504.notificationservice.entity.EmailDetails;
+import vn.vti.dtn2504.notificationservice.payload.EmailDetails;
 
 public interface EmailService {
     // Method

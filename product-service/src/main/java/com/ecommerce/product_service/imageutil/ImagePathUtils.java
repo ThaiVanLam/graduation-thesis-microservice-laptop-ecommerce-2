@@ -1,4 +1,4 @@
-package com.ecommerce.product_service.util;
+package com.ecommerce.product_service.imageutil;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

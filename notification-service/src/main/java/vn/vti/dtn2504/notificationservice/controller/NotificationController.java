@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import vn.vti.dtn2504.notificationservice.entity.EmailDetails;
+import vn.vti.dtn2504.notificationservice.payload.EmailDetails;
 import vn.vti.dtn2504.notificationservice.service.EmailService;
 
 @RequestMapping(value = "/api/v1/notifications")
