@@ -47,6 +47,7 @@ public class JwtUtils {
         }
     }
 
+//    tạo cookie chứa JWT
     public ResponseCookie generateJwtCookie(String token) {
         return ResponseCookie.from(jwtCookie, token)
                 .path("/")
@@ -62,6 +63,7 @@ public class JwtUtils {
                 .build();
     }
 
+//    Tạo JWT mới
     public String generateToken(User user) {
         List<String> roleNames = user.getRoles().stream()
                 .map(role -> role.getRoleName().name())

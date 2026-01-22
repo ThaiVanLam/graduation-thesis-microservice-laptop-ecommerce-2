@@ -23,23 +23,25 @@ public class JwtService {
 
     private static final Logger log = LoggerFactory.getLogger(JwtService.class);
 
-    private final String jwtSecret;
+    private final String jwtSecret; //Secret key để verify token
 
     public JwtService(@Value("${spring.app.jwtSecret}") String jwtSecret) {
         this.jwtSecret = jwtSecret;
     }
 
+//    giải mã JWT token và lấy ra các claims(thông tin user)
+//    claims thường chưa username, email, roles, expiration
     public Claims parseClaims(String token) {
         return Jwts.parser()
-                .verifyWith((SecretKey) getKey())
+                .verifyWith((SecretKey) getKey()) //Verify signature
                 .build()
                 .parseSignedClaims(token)
-                .getPayload();
+                .getPayload(); //lấy payload(claim)
     }
 
     public boolean isTokenValid(String token) {
         try {
-            parseClaims(token);
+            parseClaims(token); //nếu parse thành công = token valid
             return true;
         } catch (MalformedJwtException | ExpiredJwtException | UnsupportedJwtException | IllegalArgumentException ex) {
             log.warn("Invalid JWT token: {}", ex.getMessage());
@@ -49,12 +51,15 @@ public class JwtService {
 
     public List<String> extractRoles(Claims claims) {
         Object roles = claims.get("roles");
+
+//        trường hợp 1: roles là list
         if (roles instanceof List<?>) {
             return ((List<?>) roles).stream()
                     .filter(Objects::nonNull)
                     .map(Object::toString)
                     .toList();
         }
+//        trường hợp 2: roles là String(comma-separated)
         if (roles instanceof String rolesString) {
             if (rolesString.isBlank()) {
                 return List.of();
@@ -69,7 +74,7 @@ public class JwtService {
     }
 
 
-
+//Tạo secret key từ base64 string để verify JWT signature
     private Key getKey() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecret));
     }

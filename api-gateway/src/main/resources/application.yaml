@@ -3,6 +3,7 @@ spring:
     name: api-gateway
   config:
     import: optional:configserver:http://localhost:8888
+#    Secret key phải giống giữa User Service(tạo token) và API Gateway(verify token)
   app:
     jwtSecret: mySecretKey123912738fsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfgfdhrher
     jwtExpirationMs: 3000000

@@ -20,6 +20,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/*
+* luồng hoạt động trong hệ thống
+* Request -> AuthenticationFilter
+* 1.Check PublicPaths -> nếu match -> cho phép truy cập
+* 2.Extract JWT token -> Validate token
+* 3.Check rolemapping -> so sánh roles trong token với required roles
+* 4.Authorization decision (200 OK hoặc 403 Forbidden)
+* */
+
 @Component
 public class AuthenticationFilter implements GlobalFilter, Ordered {
 
@@ -42,27 +51,30 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
 
+//        1.kiểm tra public path
         if (isPublicRoute(request.getPath().value()) || isPreFlight(request)) {
             return chain.filter(exchange);
         }
-
+//lấy token từ cookie
         String token = resolveToken(request);
         if (token == null || token.isBlank()) {
             return unauthorized(exchange, "Missing authentication token");
         }
-
+//validate token
         if (!jwtService.isTokenValid(token)) {
             return unauthorized(exchange, "Invalid or expired token");
         }
 
+//      Parse claims và extract roles
         Claims claims = jwtService.parseClaims(token);
         List<String> roles = jwtService.extractRoles(claims);
-        Set<String> requiredRoles = resolveRequiredRoles(request.getPath().value());
 
+//      Kiểm tra Authorization
+        Set<String> requiredRoles = resolveRequiredRoles(request.getPath().value());
         if (!requiredRoles.isEmpty() && roles.stream().noneMatch(requiredRoles::contains)) {
             return forbidden(exchange, "Insufficient permissions");
         }
-
+//cho phép request đi tiếp
         return chain.filter(exchange);
     }
 
@@ -86,6 +98,7 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
                 .collect(Collectors.toSet());
     }
 
+//    lấy token từ cookie
     private String resolveToken(ServerHttpRequest request) {
         HttpCookie jwtCookie = request.getCookies().getFirst(jwtCookieName);
         if (jwtCookie != null && jwtCookie.getValue() != null && !jwtCookie.getValue().isBlank()) {
