@@ -71,12 +71,13 @@ public class ProductServiceImpl implements ProductService {
         return savedDto;
     }
 
+
     private double calculateSpecialPrice(double price, double discount) {
         return price - (discount * 0.01) * price;
     }
 
     @Override
-    public ProductResponse getAllProducts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder, String keyword, String category) {
+    public ProductResponse getAllProducts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder, String keyword, String category, Double minPrice, Double maxPrice) {
         Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
 
         Pageable pageable = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
@@ -89,6 +90,20 @@ public class ProductServiceImpl implements ProductService {
 
         if (category != null && !category.isEmpty()) {
             spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.like(criteriaBuilder.lower(root.get("category").get("categoryName")), category.toLowerCase()));
+        }
+
+        // Filter by min price
+        if (minPrice != null && minPrice >= 0) {
+            spec = spec.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.greaterThanOrEqualTo(root.get("specialPrice"), minPrice)
+            );
+        }
+
+        // Filter by max price
+        if (maxPrice != null && maxPrice >= 0) {
+            spec = spec.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.lessThanOrEqualTo(root.get("specialPrice"), maxPrice)
+            );
         }
 
         Page<Product> productPage = productRepository.findAll(spec, pageable);

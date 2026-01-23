@@ -184,6 +184,28 @@ public class OrderServiceImpl implements OrderService {
         return orderResponse;
     }
 
+    @Override
+    public OrderResponse getCustomerOrders(String emailId, Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
+        Page<Order> pageOrders = orderRepository.findByEmailIgnoreCase(emailId, pageDetails);
+        List<OrderDTO> orderDTOs = pageOrders.getContent().stream()
+                .map(this::mapToOrderDTO)
+                .toList();
+
+        OrderResponse orderResponse = new OrderResponse();
+        orderResponse.setContent(orderDTOs);
+        orderResponse.setPageNumber(pageOrders.getNumber());
+        orderResponse.setPageSize(pageOrders.getSize());
+        orderResponse.setTotalElements(pageOrders.getTotalElements());
+        orderResponse.setTotalPages(pageOrders.getTotalPages());
+        orderResponse.setLastPage(pageOrders.isLast());
+        return orderResponse;
+    }
+
     private OrderItemDTO mapToOrderItemDTO(OrderItem orderItem) {
         OrderItemDTO dto = new OrderItemDTO();
         dto.setOrderItemId(orderItem.getOrderItemId());

@@ -79,10 +79,29 @@ public class OrderController {
         return new ResponseEntity<OrderDTO>(order, HttpStatus.OK);
     }
 
+    @PutMapping("/order/users/orders/{orderId}/status")
+    public ResponseEntity<OrderDTO> updateOrderStatusByCustomer(@PathVariable Long orderId,
+                                                      @RequestBody OrderStatusUpdateDto orderStatusUpdateDto) {
+        OrderDTO order = orderService.updateOrder(orderId, orderStatusUpdateDto.getStatus());
+        return new ResponseEntity<OrderDTO>(order, HttpStatus.OK);
+    }
+
     @PutMapping("/seller/orders/{orderId}/status")
     public ResponseEntity<OrderDTO> updateOrderStatusSeller(@PathVariable Long orderId,
                                                       @RequestBody OrderStatusUpdateDto orderStatusUpdateDto) {
         OrderDTO order = orderService.updateOrder(orderId, orderStatusUpdateDto.getStatus());
         return new ResponseEntity<OrderDTO>(order, HttpStatus.OK);
+    }
+
+    @GetMapping("/order/users/orders")
+    public ResponseEntity<OrderResponse> getCustomerOrders(
+            @RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
+            @RequestParam(name = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize,
+            @RequestParam(name = "sortBy", defaultValue = AppConstants.SORT_ORDERS_BY, required = false) String sortBy,
+            @RequestParam(name = "sortOrder", defaultValue = AppConstants.SORT_DIR, required = false) String sortOrder
+    ) {
+        String emailId = authUtil.loggedInEmail();
+        OrderResponse orderResponse = orderService.getCustomerOrders(emailId, pageNumber, pageSize, sortBy, sortOrder);
+        return new ResponseEntity<>(orderResponse, HttpStatus.OK);
     }
 }
