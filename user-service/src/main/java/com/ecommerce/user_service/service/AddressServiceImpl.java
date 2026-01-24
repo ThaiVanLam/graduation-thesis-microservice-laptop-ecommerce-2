@@ -13,6 +13,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -94,7 +95,7 @@ public class AddressServiceImpl implements AddressService {
         List<Address> addresses = user.getAddresses();
 
         if (addresses.isEmpty()) {
-            throw new APIException("No addresses found for this user");
+            return new ArrayList<>();  // Return empty list thay vì throw exception
         }
 
         // Map list of entities to list of DTOs
