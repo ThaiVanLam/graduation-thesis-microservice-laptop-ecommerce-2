@@ -24,4 +24,8 @@ public interface AuthService {
     String getUsername(HttpServletRequest httpServletRequest);
 
     UserResponse getAllSellers(Pageable pageable);
+
+    UserResponse getAllCustomers(Pageable pageable);
+    MessageResponse deleteCustomer(Long userId);
+    MessageResponse deleteSeller(Long userId);
 }

@@ -66,4 +66,25 @@ public class AuthController {
 
         return ResponseEntity.ok(authService.getAllSellers(pageDetails));
     }
+
+    @GetMapping("/customers")
+    public ResponseEntity<?> getAllCustomers(
+            @RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber) {
+
+        Sort sortByAndOrder = Sort.by(AppConstants.SORT_USERS_BY).descending();
+        Pageable pageDetails = PageRequest.of(pageNumber ,
+                Integer.parseInt(AppConstants.PAGE_SIZE), sortByAndOrder);
+
+        return ResponseEntity.ok(authService.getAllCustomers(pageDetails));
+    }
+
+    @DeleteMapping("/customers/{userId}")
+    public ResponseEntity<?> deleteCustomer(@PathVariable Long userId) {
+        return ResponseEntity.ok(authService.deleteCustomer(userId));
+    }
+
+    @DeleteMapping("/sellers/{userId}")
+    public ResponseEntity<?> deleteSeller(@PathVariable Long userId) {
+        return ResponseEntity.ok(authService.deleteSeller(userId));
+    }
 }

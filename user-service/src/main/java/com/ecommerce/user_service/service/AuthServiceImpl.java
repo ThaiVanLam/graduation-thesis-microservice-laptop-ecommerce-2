@@ -1,5 +1,7 @@
 package com.ecommerce.user_service.service;
 
+import com.ecommerce.user_service.exceptions.APIException;
+import com.ecommerce.user_service.exceptions.ResourceNotFoundException;
 import com.ecommerce.user_service.model.AppRole;
 import com.ecommerce.user_service.model.Role;
 import com.ecommerce.user_service.model.User;
@@ -154,5 +156,65 @@ public class AuthServiceImpl implements AuthService {
         response.setTotalPages(allUsers.getTotalPages());
         response.setLastPage(allUsers.isLast());
         return response;
+    }
+
+    @Override
+    public UserResponse getAllCustomers(Pageable pageable) {
+        Page<User> allUsers = userRepository.findByRoleName(AppRole.ROLE_USER, pageable);
+        List<UserDTO> userDtos = allUsers.getContent()
+                .stream()
+                .map(p -> modelMapper.map(p, UserDTO.class))
+                .collect(Collectors.toList());
+
+        UserResponse response = new UserResponse();
+        response.setContent(userDtos);
+        response.setPageNumber(allUsers.getNumber());
+        response.setPageSize(allUsers.getSize());
+        response.setTotalElements(allUsers.getTotalElements());
+        response.setTotalPages(allUsers.getTotalPages());
+        response.setLastPage(allUsers.isLast());
+        return response;
+    }
+
+    @Override
+    public MessageResponse deleteCustomer(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+
+        // Check if user is actually a customer (only has ROLE_USER)
+        boolean isOnlyCustomer = user.getRoles().stream()
+                .allMatch(role -> role.getRoleName() == AppRole.ROLE_USER);
+
+        if (!isOnlyCustomer) {
+            throw new APIException("Cannot delete user: Not a customer or has additional roles");
+        }
+
+        userRepository.delete(user);
+        return new MessageResponse("Customer deleted successfully");
+    }
+
+    @Override
+    public MessageResponse deleteSeller(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "userId", userId));
+
+        // Check if user has seller role
+        boolean isSeller = user.getRoles().stream()
+                .anyMatch(role -> role.getRoleName() == AppRole.ROLE_SELLER);
+
+        if (!isSeller) {
+            throw new APIException("Cannot delete user: Not a seller");
+        }
+
+        // Don't allow deleting admin users
+        boolean isAdmin = user.getRoles().stream()
+                .anyMatch(role -> role.getRoleName() == AppRole.ROLE_ADMIN);
+
+        if (isAdmin) {
+            throw new APIException("Cannot delete user: User has admin role");
+        }
+
+        userRepository.delete(user);
+        return new MessageResponse("Seller deleted successfully");
     }
 }
