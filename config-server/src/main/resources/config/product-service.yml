@@ -26,12 +26,13 @@ project:
 image:
   base:
     url: http://localhost:8080/product-manager/images
-
+#    url: https://springfield-baskets-cream-apt.trycloudflare.com/product-manager/images  # Backend tunnel URL
 server:
   port: 8081
 
 frontend:
   url: http://localhost:5173
+#  url: https://pictures-rebate-mine-made.trycloudflare.com  # Frontend tunnel URL
 
 eureka:
   client:

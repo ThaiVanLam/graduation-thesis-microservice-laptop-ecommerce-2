@@ -51,6 +51,7 @@ spring:
             allowedOrigins:
               - "http://localhost:3000"
               - "http://localhost:5173"
+#              - "https://app-tba-fate-classifieds.trycloudflare.com"  # Frontend tunnel URL
               - "${frontend.url}"
             allowedMethods:
               - GET
@@ -102,3 +103,4 @@ server:
 
 frontend:
   url: http://localhost:5173
+#  url: https://pictures-rebate-mine-made.trycloudflare.com  # Frontend tunnel URL

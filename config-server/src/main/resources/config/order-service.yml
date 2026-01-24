@@ -20,7 +20,7 @@ server:
 
 frontend:
   url: http://localhost:5173
-
+#  url: https://pictures-rebate-mine-made.trycloudflare.com  # Frontend tunnel URL
 eureka:
   client:
     serviceUrl:

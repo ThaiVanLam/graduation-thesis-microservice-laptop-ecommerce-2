@@ -17,7 +17,7 @@ spring:
 
 frontend:
   url: http://localhost:5173
-
+#  url: https://pictures-rebate-mine-made.trycloudflare.com
 server:
   port: 8082
 
