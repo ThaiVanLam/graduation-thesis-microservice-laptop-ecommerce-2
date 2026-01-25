@@ -1,5 +1,6 @@
 package com.ecommerce.product_service.payload;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,66 +10,18 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ProductSpecificationDTO {
 
-    // CPU
-    private String cpuBrand;
-    private String cpuModel;
-    private String cpuGeneration;
-    private Integer cpuCores;
-    private Integer cpuThreads;
-    private String cpuBaseClock;
-    private String cpuBoostClock;
+    @Schema(description = "Processor/CPU", example = "Intel Core i7-13700H (up to 5.0GHz, 14 cores)")
+    private String processor;
 
-    // RAM
-    private String ramSize;
-    private String ramType;
-    private String ramSpeed;
-    private Integer ramSlots;
-    private String ramMaxUpgrade;
+    @Schema(description = "RAM", example = "16GB DDR5 4800MHz")
+    private String ram;
 
-    // Storage
-    private String storageType;
-    private String storageCapacity;
-    private String storageInterface;
-    private Integer additionalStorageSlots;
+    @Schema(description = "Storage", example = "512GB SSD NVMe PCIe Gen 4")
+    private String storage;
 
-    // Display
-    private String displaySize;
-    private String displayResolution;
-    private String displayPanelType;
-    private String displayRefreshRate;
-    private String displayBrightness;
-    private String displayColorGamut;
-    private Boolean displayTouchScreen;
+    @Schema(description = "Display", example = "15.6 inch FHD (1920x1080) IPS 144Hz")
+    private String display;
 
-    // GPU
-    private String gpuType;
-    private String gpuBrand;
-    private String gpuModel;
-    private String gpuVram;
-
-    // Battery
-    private String batteryCapacity;
-    private String batteryType;
-    private String batteryLife;
-    private Boolean fastCharging;
-    private String chargerWattage;
-
-    // Physical
-    private String weight;
-    private String dimensions;
-    private String material;
-    private String color;
-
-    // OS
-    private String os;
-    private String osVersion;
-
-    // Additional Features
-    private Boolean keyboardBacklight;
-    private Boolean fingerprintReader;
-    private String webcamResolution;
-    private String audioSystem;
-    private String connectivity;
-    private String ports;
-    private String warranty;
+    @Schema(description = "Graphics Card", example = "NVIDIA GeForce RTX 4060 8GB GDDR6")
+    private String graphics;
 }
