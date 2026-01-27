@@ -10,6 +10,7 @@ import com.ecommerce.product_service.payload.ProductResponse;
 import com.ecommerce.product_service.repositories.CategoryRepository;
 import com.ecommerce.product_service.repositories.ProductRepository;
 import com.ecommerce.product_service.util.AuthUtil;
+import com.ecommerce.product_service.util.SKUGenerator;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,7 +50,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDTO addProduct(Long categoryId, ProductDTO productDTO) {
-        Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new ResourceNotFoundException("Category", "categoryId", categoryId));
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "categoryId", categoryId));
 
         boolean isProductNotPresent = category.getProducts().stream()
                 .noneMatch(product -> product.getProductName().equalsIgnoreCase(productDTO.getProductName()));
@@ -64,6 +66,14 @@ public class ProductServiceImpl implements ProductService {
         product.setSpecialPrice(calculateSpecialPrice(product.getPrice(), product.getDiscount()));
         product.setSellerEmail(authUtil.loggedInEmail());
         product.setSellerId(authUtil.loggedInUserId());
+
+        // Generate SKU automatically
+        String sku = SKUGenerator.generateSKU(
+                category.getCategoryName(),
+                product.getBrand() != null ? product.getBrand() : "GENERIC",
+                product.getProductName()
+        );
+        product.setSku(sku);
 
         Product savedProduct = productRepository.save(product);
         ProductDTO savedDto = modelMapper.map(savedProduct, ProductDTO.class);
@@ -196,14 +206,48 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDTO updateProduct(Long productId, ProductDTO productDTO) {
-        Product productFromDB = productRepository.findById(productId).orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
+        Product productFromDB = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "productId", productId));
 
+        // Store old values to check if SKU needs regeneration
+        String oldProductName = productFromDB.getProductName();
+        String oldBrand = productFromDB.getBrand();
+
+        // Update basic fields
         productFromDB.setProductName(productDTO.getProductName());
         productFromDB.setDescription(productDTO.getDescription());
         productFromDB.setQuantity(productDTO.getQuantity());
         productFromDB.setDiscount(productDTO.getDiscount());
         productFromDB.setPrice(productDTO.getPrice());
         productFromDB.setSpecialPrice(calculateSpecialPrice(productDTO.getPrice(), productDTO.getDiscount()));
+
+        // Update brand - QUAN TRỌNG: Phải update brand
+        if (productDTO.getBrand() != null && !productDTO.getBrand().trim().isEmpty()) {
+            productFromDB.setBrand(productDTO.getBrand());
+        }
+
+        // Regenerate SKU if product name or brand changed
+        boolean shouldRegenerateSKU = false;
+
+        // Check if product name changed
+        if (!oldProductName.equals(productDTO.getProductName())) {
+            shouldRegenerateSKU = true;
+        }
+
+        // Check if brand changed
+        if (productDTO.getBrand() != null && !productDTO.getBrand().equals(oldBrand)) {
+            shouldRegenerateSKU = true;
+        }
+
+        // Generate new SKU if needed
+        if (shouldRegenerateSKU) {
+            String newSKU = SKUGenerator.generateSKU(
+                    productFromDB.getCategory().getCategoryName(),
+                    productFromDB.getBrand() != null ? productFromDB.getBrand() : "GENERIC",
+                    productFromDB.getProductName()
+            );
+            productFromDB.setSku(newSKU);
+        }
 
         Product savedProduct = productRepository.save(productFromDB);
         return mapToDtoWithImage(savedProduct);

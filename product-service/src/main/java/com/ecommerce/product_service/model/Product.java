@@ -41,4 +41,9 @@ public class Product {
     @JoinColumn(name = "category_id")
     private Category category;
 
+    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private ProductSpecification specification;
+
+    private String sku;
+    private String brand;
 }

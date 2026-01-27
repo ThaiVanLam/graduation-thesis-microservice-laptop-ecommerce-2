@@ -20,4 +20,7 @@ public class ProductDTO {
     private Long sellerId;
 
     private String sellerEmail;
+
+    private String sku;
+    private String brand;
 }
