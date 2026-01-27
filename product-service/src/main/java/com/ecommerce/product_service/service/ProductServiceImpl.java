@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -87,19 +88,25 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductResponse getAllProducts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder, String keyword, String category, Double minPrice, Double maxPrice) {
+    public ProductResponse getAllProducts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder,
+                                          String keyword, String category, Double minPrice, Double maxPrice,
+                                          String brands, String processors, String ram, String storage) {
         Sort sortByAndOrder = sortOrder.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
 
         Pageable pageable = PageRequest.of(pageNumber, pageSize, sortByAndOrder);
 
         Specification<Product> spec = (root, query, criteriaBuilder) -> null;
 
+        // Filter by keyword
         if (keyword != null && !keyword.isEmpty()) {
-            spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.like(criteriaBuilder.lower(root.get("productName")), "%" + keyword.toLowerCase() + "%"));
+            spec = spec.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("productName")), "%" + keyword.toLowerCase() + "%"));
         }
 
+        // Filter by category
         if (category != null && !category.isEmpty()) {
-            spec = spec.and((root, query, criteriaBuilder) -> criteriaBuilder.like(criteriaBuilder.lower(root.get("category").get("categoryName")), category.toLowerCase()));
+            spec = spec.and((root, query, criteriaBuilder) ->
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("category").get("categoryName")), category.toLowerCase()));
         }
 
         // Filter by min price
@@ -114,6 +121,56 @@ public class ProductServiceImpl implements ProductService {
             spec = spec.and((root, query, criteriaBuilder) ->
                     criteriaBuilder.lessThanOrEqualTo(root.get("specialPrice"), maxPrice)
             );
+        }
+
+        // Filter by brands
+        if (brands != null && !brands.isEmpty()) {
+            List<String> brandList = Arrays.asList(brands.split(","));
+            spec = spec.and((root, query, criteriaBuilder) ->
+                    root.get("brand").in(brandList)
+            );
+        }
+
+        // Filter by processors (via ProductSpecification)
+        if (processors != null && !processors.isEmpty()) {
+            List<String> processorList = Arrays.asList(processors.split(","));
+            spec = spec.and((root, query, criteriaBuilder) -> {
+                var predicates = processorList.stream()
+                        .map(processor -> criteriaBuilder.like(
+                                criteriaBuilder.lower(root.join("specification").get("processor")),
+                                "%" + processor.toLowerCase() + "%"
+                        ))
+                        .toArray(jakarta.persistence.criteria.Predicate[]::new);
+                return criteriaBuilder.or(predicates);
+            });
+        }
+
+        // Filter by RAM
+        if (ram != null && !ram.isEmpty()) {
+            List<String> ramList = Arrays.asList(ram.split(","));
+            spec = spec.and((root, query, criteriaBuilder) -> {
+                var predicates = ramList.stream()
+                        .map(ramSize -> criteriaBuilder.like(
+                                criteriaBuilder.lower(root.join("specification").get("ram")),
+                                "%" + ramSize.toLowerCase() + "%"
+                        ))
+                        .toArray(jakarta.persistence.criteria.Predicate[]::new);
+                return criteriaBuilder.or(predicates);
+            });
+        }
+
+        // Filter by storage
+        if (storage != null && !storage.isEmpty()) {
+            List<String> storageList = Arrays.asList(storage.split(","));
+            spec = spec.and((root, query, criteriaBuilder) -> {
+                var predicates = storageList.stream()
+                        .map(storageSize -> criteriaBuilder.like(
+                                criteriaBuilder.lower(root.join("specification").get("storage")),
+                                "%" + storageSize.toLowerCase() + "%"
+                        ))
+                        .toArray(jakarta.persistence.criteria.Predicate[]::new);
+                return criteriaBuilder.or(predicates);
+            });
         }
 
         Page<Product> productPage = productRepository.findAll(spec, pageable);
@@ -342,5 +399,8 @@ public class ProductServiceImpl implements ProductService {
         return productResponse;
     }
 
-
+    @Override
+    public List<String> getAllBrands() {
+        return productRepository.findAllDistinctBrands();
+    }
 }
