@@ -11,10 +11,12 @@ spring:
     name: notification-service
   config:
     #    Imports configuration data from a config server when available
-    import: "optional:configserver:"
+#    import: "optional:configserver:"
+    import: "optional:configserver:${CONFIG_SERVER_URL:http://config-server:8888}"
   cloud:
     config:
-      uri: ${CONFIG_SERVER_URL:http://localhost:8888}
+#      uri: ${CONFIG_SERVER_URL:http://localhost:8888}
+      uri: ${CONFIG_SERVER_URL:http://config-server:8888}
       #      1
       request-connect-timeout: 5000
       #      2
