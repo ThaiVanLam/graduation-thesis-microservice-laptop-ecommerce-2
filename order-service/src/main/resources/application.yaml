@@ -1,8 +1,8 @@
 spring:
   application:
     name: order-service
-  config:
-    import: optional:configserver:http://localhost:8888
+#  config:
+#    import: optional:configserver:http://localhost:8888
   rabbitmq:
 #   --for local testing, these values can be overridden by the config server
 #    host: localhost
