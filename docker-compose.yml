@@ -28,7 +28,7 @@ services:
     container_name: rabbitmq
     ports:
       - "5672:5672"
-      - "15672:15672"   # Management UI
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
@@ -41,7 +41,7 @@ services:
       retries: 5
 
   # =====================
-  # CONFIG SERVER (khởi động đầu tiên)
+  # CONFIG SERVER
   # =====================
   config-server:
     build: ./config-server
@@ -55,6 +55,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 30s
 
   # =====================
   # DISCOVERY SERVICE (Eureka)
@@ -74,6 +75,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 30s
 
   # =====================
   # BUSINESS SERVICES
@@ -82,14 +84,19 @@ services:
     build: ./user-service
     container_name: user-service
     ports:
-      - "8081:8081"
+      - "8082:8082"
     environment:
+      SERVER_PORT: 8082
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ecommerce?createDatabaseIfNotExist=true
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_RABBITMQ_HOST: rabbitmq
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
       SPRING_CONFIG_IMPORT: configserver:http://config-server:8888
+      SPRING_APP_JWTSECRET: mySecretKey123912738fsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfgfdhrher
+      SPRING_APP_JWTEXPIRATIONMS: 3000000
+      SPRING_ECOM_APP_JWTCOOKIENAME: springBootEcom
+      FRONTEND_URL: http://localhost:5173
     networks:
       - ecommerce-network
     depends_on:
@@ -104,13 +111,19 @@ services:
     build: ./product-service
     container_name: product-service
     ports:
-      - "8082:8082"
+      - "8081:8081"
     environment:
+      SERVER_PORT: 8081
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ecommerce_product?createDatabaseIfNotExist=true
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
       SPRING_CONFIG_IMPORT: configserver:http://config-server:8888
+      SPRING_APP_JWTSECRET: mySecretKey123912738fsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfgfdhrher
+      SPRING_APP_JWTEXPIRATIONMS: 3000000
+      SPRING_ECOM_APP_JWTCOOKIENAME: springBootEcom
+      IMAGE_BASE_URL: http://localhost:8080/product-manager/images
+      FRONTEND_URL: http://localhost:5173
     networks:
       - ecommerce-network
     depends_on:
@@ -125,13 +138,19 @@ services:
     ports:
       - "8083:8083"
     environment:
+      SERVER_PORT: 8083
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ecommerce_order?createDatabaseIfNotExist=true
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_RABBITMQ_HOST: rabbitmq
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
       SPRING_CONFIG_IMPORT: configserver:http://config-server:8888
+      SPRING_APP_JWTSECRET: mySecretKey123912738fsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfgfdhrher
+      SPRING_APP_JWTEXPIRATIONMS: 3000000
+      SPRING_ECOM_APP_JWTCOOKIENAME: springBootEcom
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      PRODUCT_SERVICE_BASE-URL: http://product-service:8081/api
+      FRONTEND_URL: http://localhost:5173
     networks:
       - ecommerce-network
     depends_on:
@@ -148,6 +167,7 @@ services:
     ports:
       - "8084:8084"
     environment:
+      SERVER_PORT: 8084
       SPRING_RABBITMQ_HOST: rabbitmq
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
       SPRING_CONFIG_IMPORT: configserver:http://config-server:8888
@@ -161,7 +181,7 @@ services:
         condition: service_healthy
 
   # =====================
-  # API GATEWAY (khởi động cuối cùng)
+  # API GATEWAY
   # =====================
   api-gateway:
     build: ./api-gateway
@@ -170,6 +190,8 @@ services:
       - "8080:8080"
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-service:8761/eureka/
+      EUREKA_SERVER_URL: http://discovery-service:8761
+      FRONTEND_URL: http://localhost:5173
     networks:
       - ecommerce-network
     depends_on:
@@ -182,4 +204,3 @@ volumes:
 networks:
   ecommerce-network:
     driver: bridge
-

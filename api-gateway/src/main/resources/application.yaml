@@ -1,17 +1,12 @@
 spring:
   application:
     name: api-gateway
-#  config:
-#    import: optional:configserver:http://localhost:8888
-#    Secret key phải giống giữa User Service(tạo token) và API Gateway(verify token)
   app:
     jwtSecret: mySecretKey123912738fsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfsdfgfdhrher
     jwtExpirationMs: 3000000
   ecom:
     app:
       jwtCookieName: springBootEcom
-
-
 
   cloud:
     gateway:
@@ -35,13 +30,13 @@ spring:
           filters:
             - RewritePath=/order-manager/(?<segment>.*), /$\{segment}
         - id: eureka-server
-          uri: http://localhost:8761
+          uri: ${EUREKA_SERVER_URL:http://localhost:8761}
           predicates:
             - Path=/eureka/main
           filters:
             - SetPath=/
         - id: eureka-server-static
-          uri: http://localhost:8761
+          uri: ${EUREKA_SERVER_URL:http://localhost:8761}
           predicates:
             - Path=/eureka/**
 
@@ -51,8 +46,7 @@ spring:
             allowedOrigins:
               - "http://localhost:3000"
               - "http://localhost:5173"
-#              - "https://app-tba-fate-classifieds.trycloudflare.com"  # Frontend tunnel URL
-              - "${frontend.url}"
+              - "${FRONTEND_URL:http://localhost:5173}"
             allowedMethods:
               - GET
               - POST
@@ -77,20 +71,9 @@ gateway:
       - /v3/api-docs/**
       - /swagger-ui/**
 
-    #    role-mappings: []
     role-mappings:
       - pattern: /product-manager/api/admin/**
         roles: [ ROLE_ADMIN ]
-      #      - pattern: /product-manager/api/products/**
-      #        roles: [ROLE_SELLER, ROLE_ADMIN]
-      #      - pattern: /order-manager/api/carts/**
-      #        roles: [ROLE_USER, ROLE_ADMIN]
-      #      - pattern: /order-manager/api/order/**
-      #        roles: [ROLE_USER, ROLE_ADMIN]
-      #      - pattern: /user-manager/api/addresses/**
-      #        roles: [ROLE_USER, ROLE_ADMIN]
-      #      - pattern: /user-manager/api/users/addresses/**
-      #        roles: [ROLE_USER, ROLE_ADMIN]
       - pattern: /user-manager/api/admin/**
         roles: [ ROLE_ADMIN ]
       - pattern: /order-manager/api/admin/**
@@ -102,5 +85,4 @@ server:
   port: 8080
 
 frontend:
-  url: http://localhost:5173
-#  url: https://pictures-rebate-mine-made.trycloudflare.com  # Frontend tunnel URL
+  url: ${FRONTEND_URL:http://localhost:5173}
