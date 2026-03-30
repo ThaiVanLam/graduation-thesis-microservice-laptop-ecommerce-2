@@ -106,6 +106,10 @@ services:
         condition: service_healthy
       discovery-service:
         condition: service_healthy
+      config-server:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
 
   product-service:
     build: ./product-service
@@ -130,6 +134,10 @@ services:
       mysql:
         condition: service_healthy
       discovery-service:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      api-gateway:
         condition: service_healthy
 
   order-service:
@@ -160,6 +168,10 @@ services:
         condition: service_healthy
       discovery-service:
         condition: service_healthy
+      config-server:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
 
   notification-service:
     build: ./notification-service
@@ -178,6 +190,10 @@ services:
       rabbitmq:
         condition: service_healthy
       discovery-service:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      api-gateway:
         condition: service_healthy
 
   # =====================

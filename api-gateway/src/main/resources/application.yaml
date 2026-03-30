@@ -86,3 +86,10 @@ server:
 
 frontend:
   url: ${FRONTEND_URL:http://localhost:5173}
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
